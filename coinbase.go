@@ -16,14 +16,17 @@ type CoinbaseClient struct {
 }
 
 type CoinbaseProClient struct {
-	baseURL    string
-	sandboxURL string
+	baseURL      string
+	sandboxURL   string
+	websocketURL string
+	origin       string
 
 	client http.Client
 
 	Product  productService
 	Currency currencyProService
 	Time     timeProService
+	Channel  channelService
 }
 
 func NewCoinbaseClient() CoinbaseClient {
@@ -42,15 +45,17 @@ func NewCoinbaseClient() CoinbaseClient {
 
 func NewCoinbaseProClient() CoinbaseProClient {
 	client := CoinbaseProClient {
-		baseURL:    "https://api.pro.coinbase.com",
-		sandboxURL: "https://api-public.sandbox.pro.coinbase.com",
-
-		client: *http.DefaultClient,
+		baseURL:      "https://api.pro.coinbase.com",
+		sandboxURL:   "https://api-public.sandbox.pro.coinbase.com",
+		websocketURL: "wss://ws-feed.pro.coinbase.com",
+		origin:       "https://coinbase.com",
+		client:       *http.DefaultClient,
 	}
 
 	client.Product  = productService{client: &client}
 	client.Currency = currencyProService{client: &client}
 	client.Time     = timeProService{client: &client}
+	client.Channel  = channelService{client: &client}
 
 	return client
 }

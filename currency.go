@@ -9,6 +9,11 @@ type Currency struct {
 	ID          string `json:"id"`
 	Name        string `json:"name"`
 	MinimumSize string `json:"min_size"`
+
+	// WebSocket Only
+	Status        string `json:"status"`
+	StatusMessage string `json:"status_message"`
+
 }
 
 // https://developers.coinbase.com/api/v2#currencies
