@@ -1,6 +1,8 @@
 # go-coinbase
 Coinbase API Client \
-Version: 0.1.0
+![GitHub tag (latest SemVer)](https://img.shields.io/github/v/tag/Reclyptor/go-coinbase?color=blue&label=Release&sort=semver&style=plastic)
+![GitHub](https://img.shields.io/github/license/Reclyptor/go-coinbase?color=red&label=License&style=plastic)
+![GitHub repo size](https://img.shields.io/github/repo-size/Reclyptor/go-coinbase?color=green&label=Size&style=plastic)
 
 ## Installation
 ```shell script
@@ -59,11 +61,6 @@ The endpoints supported by the client are listed below.
     - [Get Currencies](https://docs.pro.coinbase.com/#get-currencies)
   - [Time](https://docs.pro.coinbase.com/#time)
     - [Get Current Time](https://docs.pro.coinbase.com/#time)
-
-## Notes
-2020 August 02
- - This initial version of the client only supports the use of the public data endpoints, which do not require any form of authentication.
-   - Note that these endpoints are throttled by Coinbase at a rate of roughly 2 requests per second.
    
 ## Roadmap
 1) Formal Testing
@@ -71,3 +68,11 @@ The endpoints supported by the client are listed below.
 3) Proper Error Handling and Propagation
 5) Websocket Feed
 4) Support for Private Endpoints
+
+## Notes
+2020 August 03
+- Laid out the initial groundwork for WebSocket support. Currently, only the Heartbeat channel is subscribable.
+
+2020 August 02
+ - This initial version of the client only supports the use of the public data endpoints, which do not require any form of authentication.
+   - Note that these endpoints are throttled by Coinbase at a rate of roughly 2 requests per second.
