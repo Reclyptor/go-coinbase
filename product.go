@@ -73,7 +73,7 @@ type productService struct {
 }
 
 // https://docs.pro.coinbase.com/#get-products
-func (product productService) GetProducts() []Product {
+func (product *productService) GetProducts() []Product {
 	endpoint := product.client.baseURL + "/products"
 	res, _ := product.client.client.Get(endpoint)
 	data, _ := ioutil.ReadAll(res.Body)
@@ -83,7 +83,7 @@ func (product productService) GetProducts() []Product {
 }
 
 // https://docs.pro.coinbase.com/#get-single-product
-func (product productService) GetSingleProduct(currencyPair CurrencyPair) Product {
+func (product *productService) GetSingleProduct(currencyPair CurrencyPair) Product {
 	endpoint := product.client.baseURL + "/products" + fmt.Sprintf("/%s", currencyPair)
 	res, _ := product.client.client.Get(endpoint)
 	data, _ := ioutil.ReadAll(res.Body)
@@ -94,7 +94,7 @@ func (product productService) GetSingleProduct(currencyPair CurrencyPair) Produc
 
 
 // https://docs.pro.coinbase.com/#get-product-order-book
-func (product productService) GetProductOrderBook(currencyPair CurrencyPair, level int) Book {
+func (product *productService) GetProductOrderBook(currencyPair CurrencyPair, level int) Book {
 	endpoint := product.client.baseURL + "/products" + fmt.Sprintf("/%s", currencyPair) + "/book" + fmt.Sprintf("?level=%d", int(math.Max(math.Min(float64(level), 3), 1)))
 	res, _ := product.client.client.Get(endpoint)
 	data, _ := ioutil.ReadAll(res.Body)
@@ -104,7 +104,7 @@ func (product productService) GetProductOrderBook(currencyPair CurrencyPair, lev
 }
 
 // https://docs.pro.coinbase.com/#get-product-ticker
-func (product productService) GetProductTicker(currencyPair CurrencyPair) Ticker {
+func (product *productService) GetProductTicker(currencyPair CurrencyPair) Ticker {
 	endpoint := product.client.baseURL + "/products" + fmt.Sprintf("/%s", currencyPair) + "/ticker"
 	res, _ := product.client.client.Get(endpoint)
 	data, _ := ioutil.ReadAll(res.Body)
@@ -114,7 +114,7 @@ func (product productService) GetProductTicker(currencyPair CurrencyPair) Ticker
 }
 
 // https://docs.pro.coinbase.com/#get-trades
-func (product productService) GetTrades(currencyPair CurrencyPair) []Trade {
+func (product *productService) GetTrades(currencyPair CurrencyPair) []Trade {
 	endpoint := product.client.baseURL + "/products" + fmt.Sprintf("/%s", currencyPair) + "/trades"
 	res, _ := product.client.client.Get(endpoint)
 	data, _ := ioutil.ReadAll(res.Body)
@@ -124,7 +124,7 @@ func (product productService) GetTrades(currencyPair CurrencyPair) []Trade {
 }
 
 // https://docs.pro.coinbase.com/#get-historic-rates
-func (product productService) GetHistoricRates(currencyPair CurrencyPair, start time.Time, end time.Time, granularity time.Duration) []Candle {
+func (product *productService) GetHistoricRates(currencyPair CurrencyPair, start time.Time, end time.Time, granularity time.Duration) []Candle {
 	endpoint := product.client.baseURL + "/products" + fmt.Sprintf("/%s", currencyPair) + "/candles" + fmt.Sprintf("?start=%s&end=%s&granularity=%s", start.Format(time.RFC3339), end.Format(time.RFC3339), granularity.Seconds())
 	res, _ := product.client.client.Get(endpoint)
 	data, _ := ioutil.ReadAll(res.Body)
@@ -134,7 +134,7 @@ func (product productService) GetHistoricRates(currencyPair CurrencyPair, start 
 }
 
 // https://docs.pro.coinbase.com/#get-24hr-stats
-func (product productService) Get24HourStats(currencyPair CurrencyPair) Stats {
+func (product *productService) Get24HourStats(currencyPair CurrencyPair) Stats {
 	endpoint := product.client.baseURL + "/products" + fmt.Sprintf("/%s", currencyPair) + "/stats"
 	res, _ := product.client.client.Get(endpoint)
 	data, _ := ioutil.ReadAll(res.Body)
@@ -143,12 +143,12 @@ func (product productService) Get24HourStats(currencyPair CurrencyPair) Stats {
 	return payload
 }
 
-func (bid Bid) Price() float64 {
-	if len(bid) < 1 {
+func (bid *Bid) Price() float64 {
+	if len(*bid) < 1 {
 		return 0
 	}
 
-	price, err := strconv.ParseFloat(bid[0].(string), 64)
+	price, err := strconv.ParseFloat((*bid)[0].(string), 64)
 
 	if err != nil {
 		return 0
@@ -157,12 +157,12 @@ func (bid Bid) Price() float64 {
 	return price
 }
 
-func (bid Bid) Size() float64 {
-	if len(bid) < 2 {
+func (bid *Bid) Size() float64 {
+	if len(*bid) < 2 {
 		return 0
 	}
 
-	size, err := strconv.ParseFloat(bid[1].(string), 64)
+	size, err := strconv.ParseFloat((*bid)[1].(string), 64)
 
 	if err != nil {
 		return 0
@@ -171,36 +171,36 @@ func (bid Bid) Size() float64 {
 	return size
 }
 
-func (bid Bid) NumOrders() int64 {
-	if len(bid) < 3 {
+func (bid *Bid) NumOrders() int64 {
+	if len(*bid) < 3 {
 		return 0
 	}
 
-	if numOrders, ok := bid[2].(float64); ok {
+	if numOrders, ok := (*bid)[2].(float64); ok {
 		return int64(numOrders)
 	}
 
 	return 0
 }
 
-func (bid Bid) OrderID() string {
-	if len(bid) < 3 {
+func (bid *Bid) OrderID() string {
+	if len(*bid) < 3 {
 		return ""
 	}
 
-	if orderID, ok := bid[2].(string); ok {
+	if orderID, ok := (*bid)[2].(string); ok {
 		return orderID
 	}
 
 	return ""
 }
 
-func (ask Ask) Price() float64 {
-	if len(ask) < 1 {
+func (ask *Ask) Price() float64 {
+	if len(*ask) < 1 {
 		return 0
 	}
 
-	price, err := strconv.ParseFloat(ask[0].(string), 64)
+	price, err := strconv.ParseFloat((*ask)[0].(string), 64)
 
 	if err != nil {
 		return 0
@@ -209,12 +209,12 @@ func (ask Ask) Price() float64 {
 	return price
 }
 
-func (ask Ask) Size() float64 {
-	if len(ask) < 2 {
+func (ask *Ask) Size() float64 {
+	if len(*ask) < 2 {
 		return 0
 	}
 
-	size, err := strconv.ParseFloat(ask[1].(string), 64)
+	size, err := strconv.ParseFloat((*ask)[1].(string), 64)
 
 	if err != nil {
 		return 0
@@ -223,96 +223,96 @@ func (ask Ask) Size() float64 {
 	return size
 }
 
-func (ask Ask) NumOrders() int64 {
-	if len(ask) < 3 {
+func (ask *Ask) NumOrders() int64 {
+	if len(*ask) < 3 {
 		return 0
 	}
 
-	if numOrders, ok := ask[2].(float64); ok {
+	if numOrders, ok := (*ask)[2].(float64); ok {
 		return int64(numOrders)
 	}
 
 	return 0
 }
 
-func (ask Ask) OrderID() string {
-	if len(ask) < 3 {
+func (ask *Ask) OrderID() string {
+	if len(*ask) < 3 {
 		return ""
 	}
 
-	if orderID, ok := ask[2].(string); ok {
+	if orderID, ok := (*ask)[2].(string); ok {
 		return orderID
 	}
 
 	return ""
 }
 
-func (candle Candle) Time() int64 {
-	if len(candle) < 1 {
+func (candle *Candle) Time() int64 {
+	if len(*candle) < 1 {
 		return 0
 	}
 
-	if time, ok := candle[0].(float64); ok {
+	if time, ok := (*candle)[0].(float64); ok {
 		return int64(time)
 	}
 
 	return 0
 }
 
-func (candle Candle) Low() float64 {
-	if len(candle) < 2 {
+func (candle *Candle) Low() float64 {
+	if len(*candle) < 2 {
 		return 0
 	}
 
-	if low, ok := candle[1].(float64); ok {
+	if low, ok := (*candle)[1].(float64); ok {
 		return low
 	}
 
 	return 0
 }
 
-func (candle Candle) High() float64 {
-	if len(candle) < 3 {
+func (candle *Candle) High() float64 {
+	if len(*candle) < 3 {
 		return 0
 	}
 
-	if high, ok := candle[2].(float64); ok {
+	if high, ok := (*candle)[2].(float64); ok {
 		return high
 	}
 
 	return 0
 }
 
-func (candle Candle) Open() float64 {
-	if len(candle) < 4 {
+func (candle *Candle) Open() float64 {
+	if len(*candle) < 4 {
 		return 0
 	}
 
-	if open, ok := candle[3].(float64); ok {
+	if open, ok := (*candle)[3].(float64); ok {
 		return open
 	}
 
 	return 0
 }
 
-func (candle Candle) Close() float64 {
-	if len(candle) < 5 {
+func (candle *Candle) Close() float64 {
+	if len(*candle) < 5 {
 		return 0
 	}
 
-	if close_, ok := candle[4].(float64); ok {
+	if close_, ok := (*candle)[4].(float64); ok {
 		return close_
 	}
 
 	return 0
 }
 
-func (candle Candle) Volume() float64 {
-	if len(candle) < 6 {
+func (candle *Candle) Volume() float64 {
+	if len(*candle) < 6 {
 		return 0
 	}
 
-	if volume, ok := candle[5].(float64); ok {
+	if volume, ok := (*candle)[5].(float64); ok {
 		return volume
 	}
 

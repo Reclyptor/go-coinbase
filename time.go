@@ -21,7 +21,7 @@ type timeProService struct {
 }
 
 // https://developers.coinbase.com/api/v2#get-current-time
-func (time timeService) GetCurrentTime() Time {
+func (time *timeService) GetCurrentTime() Time {
 	endpoint := time.client.baseURL + "/time"
 	res, _ := time.client.client.Get(endpoint)
 	data, _ := ioutil.ReadAll(res.Body)
@@ -33,7 +33,7 @@ func (time timeService) GetCurrentTime() Time {
 }
 
 // https://docs.pro.coinbase.com/#time
-func (time timeProService) GetCurrentTime() Time {
+func (time *timeProService) GetCurrentTime() Time {
 	endpoint := time.client.baseURL + "/time"
 	res, _ := time.client.client.Get(endpoint)
 	data, _ := ioutil.ReadAll(res.Body)

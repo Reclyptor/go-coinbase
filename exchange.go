@@ -17,7 +17,7 @@ type exchangeService struct {
 }
 
 // https://developers.coinbase.com/api/v2#get-exchange-rates
-func (exchange exchangeService) GetExchangeRates(crypto CryptoCurrency) ExchangeRates {
+func (exchange *exchangeService) GetExchangeRates(crypto CryptoCurrency) ExchangeRates {
 	endpoint := exchange.client.baseURL + "/exchange-rates" + fmt.Sprintf("?currency=%s", crypto)
 	res, _ := exchange.client.client.Get(endpoint)
 	data, _ := ioutil.ReadAll(res.Body)
