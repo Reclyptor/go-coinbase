@@ -6,36 +6,36 @@ import (
 )
 
 type Message struct {
-	Type MessageType `json:"type"`
+	Type messageType `json:"type"`
 }
 
 type Error struct {
-	Type    MessageType `json:"type"`
+	Type    messageType `json:"type"`
 	Message string      `json:"message"`
 	Reason  string      `json:"reason"`
 }
 
 type Subscribe struct {
-	Type     MessageType `json:"type"`
+	Type     messageType `json:"type"`
 	Channels interface{} `json:"channels"`
 }
 
 type Unsubscribe struct {
-	Type MessageType `json:"type"`
+	Type messageType `json:"type"`
 }
 
 type Channel struct {
-	Name       MessageType    `json:"name"`
+	Name       messageType    `json:"name"`
 	ProductIDs []CurrencyPair `json:"product_ids"`
 }
 
 type Subscriptions struct {
-	Type     MessageType `json:"type"`
+	Type     messageType `json:"type"`
 	Channels []Channel   `json:"message"`
 }
 
 type Heartbeat struct {
-	Type        MessageType  `json:"type"`
+	Type        messageType  `json:"type"`
 	Sequence    int64        `json:"sequence"`
 	LastTradeID int64        `json:"last_trade_id"`
 	ProductID   CurrencyPair `json:"product_id"`
@@ -43,38 +43,30 @@ type Heartbeat struct {
 }
 
 type Status struct {
-	Type        MessageType `json:"type"`
-	Message     string      `json:"message"`
-	Reason      string      `json:"reason"`
-	Products    []Product   `json:"products"`
-	Currencies  []Currency  `json:"currencies"`
+	Type       messageType `json:"type"`
+	Message    string      `json:"message"`
+	Reason     string      `json:"reason"`
+	Products   []Product   `json:"products"`
+	Currencies []Currency  `json:"currencies"`
 }
 
-type MessageType string
+type messageType string
 const (
-	ERROR         MessageType = "error"
-
-	// Subscription Messages
-	SUBSCRIBE     MessageType = "subscribe"
-	UNSUBSCRIBE   MessageType = "unsubscribe"
-	SUBSCRIPTIONS MessageType = "subscriptions"
-
-	// Channel Messages
-	HEARTBEAT     MessageType = "heartbeat"
-	STATUS        MessageType = "status"
-	TICKER        MessageType = "ticker"
-
-	// Level2 Channel Messages
-	SNAPSHOT      MessageType = "snapshot"
-	L2UPDATE      MessageType = "l2update"
-
-	// Full Channel Messages
-	RECEIVED      MessageType = "received"
-	OPEN          MessageType = "open"
-	DONE          MessageType = "done"
-	MATCH         MessageType = "match"
-	CHANGE        MessageType = "change"
-	ACTIVATE      MessageType = "activate"
+	activate_message      messageType = "activate"
+	change_message        messageType = "change"
+	done_message          messageType = "done"
+	error_message         messageType = "error"
+	heartbeat_message     messageType = "heartbeat"
+	l2update_message      messageType = "l2update"
+	match_message         messageType = "match"
+	open_message          messageType = "open"
+	received_message      messageType = "received"
+	snapshot_message      messageType = "snapshot"
+	status_message        messageType = "status"
+	subscribe_message     messageType = "subscribe"
+	subscriptions_message messageType = "subscriptions"
+	ticker_message        messageType = "ticker"
+	unsubscribe_message   messageType = "unsubscribe"
 )
 
 // https://docs.pro.coinbase.com/#channels
@@ -88,10 +80,10 @@ func (channel channelService) wsclient() (*websocket.Conn, error) {
 
 func (channel channelService) SubscribeToHeartbeat(handler func(heartbeat Heartbeat) error, currencyPairs ...CurrencyPair) error {
 	subscribe := Subscribe {
-		Type:     SUBSCRIBE,
+		Type:     subscribe_message,
 		Channels: []interface{} {
 			Channel {
-				Name: HEARTBEAT,
+				Name: heartbeat_message,
 				ProductIDs: currencyPairs,
 			},
 		},
@@ -112,7 +104,7 @@ func (channel channelService) SubscribeToHeartbeat(handler func(heartbeat Heartb
 		return err
 	}
 
-	if subscriptions.Type != SUBSCRIPTIONS {
+	if subscriptions.Type != subscriptions_message {
 		return errors.New("failed to subscribe to heartbeat channel")
 	}
 
@@ -122,11 +114,10 @@ func (channel channelService) SubscribeToHeartbeat(handler func(heartbeat Heartb
 			return err
 		}
 
-		if heartbeat.Type == HEARTBEAT {
+		if heartbeat.Type == heartbeat_message {
 			if err := handler(heartbeat); err != nil {
 				return err
 			}
-			continue
 		}
 	}
 }
