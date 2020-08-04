@@ -27,7 +27,7 @@ type currencyProService struct {
 }
 
 // https://developers.coinbase.com/api/v2#get-currencies
-func (currency currencyService) GetCurrencies() []Currency {
+func (currency *currencyService) GetCurrencies() []Currency {
 	endpoint := currency.client.baseURL + "/currencies"
 	res, _ := currency.client.client.Get(endpoint)
 	data, _ := ioutil.ReadAll(res.Body)
@@ -39,7 +39,7 @@ func (currency currencyService) GetCurrencies() []Currency {
 }
 
 // https://docs.pro.coinbase.com/#get-currencies
-func (currency currencyProService) GetCurrencies() []Currency {
+func (currency *currencyProService) GetCurrencies() []Currency {
 	endpoint := currency.client.baseURL + "/currencies"
 	res, _ := currency.client.client.Get(endpoint)
 	data, _ := ioutil.ReadAll(res.Body)

@@ -1,8 +1,9 @@
 package coinbase
 
 import (
-	"errors"
+	"encoding/json"
 	"golang.org/x/net/websocket"
+	"sync"
 )
 
 type Message struct {
@@ -71,16 +72,72 @@ const (
 
 // https://docs.pro.coinbase.com/#channels
 type channelService struct {
-	client *CoinbaseProClient
+	sync.Mutex
+	polling       bool
+	client        *CoinbaseProClient
+	subscriptions chan Subscriptions
+	heartbeat     chan Heartbeat
 }
 
-func (channel channelService) wsclient() (*websocket.Conn, error) {
-	return websocket.Dial(channel.client.websocketURL, "", channel.client.origin)
+func (channel *channelService) poll() {
+	for channel.polling {
+		var payload map[string]interface{}
+		if err := websocket.JSON.Receive(channel.client.socket, &payload); err != nil {
+			continue
+		}
+
+		marshalled, err := json.Marshal(payload)
+		if err != nil {
+			continue
+		}
+
+		mtype, ok := payload["type"]
+		if !ok {
+			continue
+		}
+
+		switch messageType(mtype.(string)) {
+		case subscriptions_message:
+			var subscriptions Subscriptions
+			if err := json.Unmarshal(marshalled, &subscriptions); err == nil && channel.subscriptions != nil {
+				channel.subscriptions <- subscriptions
+			}
+		case heartbeat_message:
+			var heartbeat Heartbeat
+			if err := json.Unmarshal(marshalled, &heartbeat); err == nil && channel.heartbeat != nil {
+				channel.heartbeat <- heartbeat
+			}
+		}
+	}
 }
 
-func (channel channelService) SubscribeToHeartbeat(handler func(heartbeat Heartbeat) error, currencyPairs ...CurrencyPair) error {
+func (channel *channelService) beginPolling() {
+	if !channel.polling {
+		channel.Lock()
+		if !channel.polling {
+			channel.polling = true
+			go channel.poll()
+		}
+		channel.Unlock()
+	}
+}
+
+func (channel *channelService) SubscribeToSubscriptions() <-chan Subscriptions {
+	if channel.subscriptions == nil {
+		channel.subscriptions = make(chan Subscriptions)
+		channel.beginPolling()
+	}
+	return channel.subscriptions
+}
+
+func (channel *channelService) SubscribeToHeartbeat(currencyPairs ...CurrencyPair) <-chan Heartbeat {
+	if channel.heartbeat == nil {
+		channel.heartbeat = make(chan Heartbeat)
+		channel.beginPolling()
+	}
+
 	subscribe := Subscribe {
-		Type:     subscribe_message,
+		Type: subscribe_message,
 		Channels: []interface{} {
 			Channel {
 				Name: heartbeat_message,
@@ -89,60 +146,32 @@ func (channel channelService) SubscribeToHeartbeat(handler func(heartbeat Heartb
 		},
 	}
 
-	wsclient, err := channel.wsclient()
-	if err != nil {
-		return err
-	}
-	defer wsclient.Close()
+	_ = websocket.JSON.Send(channel.client.socket, subscribe)
 
-	if err := websocket.JSON.Send(wsclient, subscribe); err != nil {
-		return err
-	}
-
-	var subscriptions Subscriptions
-	if err := websocket.JSON.Receive(wsclient, &subscriptions); err != nil {
-		return err
-	}
-
-	if subscriptions.Type != subscriptions_message {
-		return errors.New("failed to subscribe to heartbeat channel")
-	}
-
-	for {
-		var heartbeat Heartbeat
-		if err := websocket.JSON.Receive(wsclient, &heartbeat); err != nil {
-			return err
-		}
-
-		if heartbeat.Type == heartbeat_message {
-			if err := handler(heartbeat); err != nil {
-				return err
-			}
-		}
-	}
+	return channel.heartbeat
 }
 
-func (channel channelService) SubscribeToStatus() {
+func (channel *channelService) SubscribeToStatus() {
 
 }
 
-func (channel channelService) SubscribeToTicker() {
+func (channel *channelService) SubscribeToTicker() {
 
 }
 
-func (channel channelService) SubscribeToLevelTwo() {
+func (channel *channelService) SubscribeToLevelTwo() {
 
 }
 
-func (channel channelService) SubscribeToUser() {
+func (channel *channelService) SubscribeToUser() {
 
 }
 
-func (channel channelService) SubscribeToMatches() {
+func (channel *channelService) SubscribeToMatches() {
 
 }
 
-func (channel channelService) SubscribeToFull() {
+func (channel *channelService) SubscribeToFull() {
 
 }
 
