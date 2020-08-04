@@ -23,7 +23,7 @@ func main() {
 	client := coinbase.NewCoinbaseClient()
 
 	// Retrieve An Asset's Market Price
-	price := client.Price.GetSpotPrice(coinbase.BTC_USD)
+	price := client.Price.GetSpotPrice(coinbase.CurrencyPairs.BTC_USD)
 
 	fmt.Printf("%+v\n", price)
 }
